@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
@@ -7,9 +7,20 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const auth = await AsyncStorage.getItem("auth");
+      setIsAuthenticated(auth === "true");
+    };
+
+    checkAuth();
+  }, []);
 
   return (
     <Tabs
@@ -27,6 +38,17 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
+        name="form"
+        options={{
+          title: "Авторизация",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="person.fill" color={color} />
+          ),
+          tabBarStyle: !isAuthenticated ? { display: "none" } : { display: "flex" },
+        }}
+      />
+
+      <Tabs.Screen
         name="index"
         options={{
           title: "Калькулятор",
@@ -42,16 +64,6 @@ export default function TabLayout() {
           title: "Результаты",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="checklist" color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="form"
-        options={{
-          title: "Авторизация",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
           ),
         }}
       />

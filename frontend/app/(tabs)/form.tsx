@@ -1,7 +1,7 @@
 import axios from "axios";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -26,6 +26,19 @@ const FormScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const storedUsername = await AsyncStorage.getItem("user");
+      const storedAuth = await AsyncStorage.getItem("auth");
+      if (storedAuth === "true" && storedUsername) {
+        setUsername(storedUsername);
+        setIsAuthenticated(true);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const handleSubmit = async () => {
     if (isLogin) {
