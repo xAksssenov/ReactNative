@@ -30,7 +30,7 @@ const FormScreen = () => {
     if (isLogin) {
       try {
         const response = await axios.post<LoginResponse>(
-          "http://localhost:8080/api/login/",
+          "http://192.168.0.108:8080/api/login/",
           {
             email,
             password,
@@ -60,7 +60,7 @@ const FormScreen = () => {
     } else {
       try {
         await axios.post(
-          "http://localhost:8080/api/login/",
+          "http://192.168.0.108:8080/api/login/",
           {
             username,
             email,

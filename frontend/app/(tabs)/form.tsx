@@ -6,7 +6,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   ScrollView,
   StyleSheet,
   Platform,
@@ -26,12 +25,13 @@ const FormScreen = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleSubmit = async () => {
     if (isLogin) {
       try {
         const response = await axios.post<LoginResponse>(
-          "http://localhost:8080/api/login/",
+          "http://127.0.0.1:8080/api/login/",
           {
             email,
             password,
@@ -48,21 +48,18 @@ const FormScreen = () => {
           const { username } = response.data;
           AsyncStorage.setItem("user", username);
           AsyncStorage.setItem("auth", "true");
-          router.push('/(tabs)')
+          setIsAuthenticated(true);
+          router.push("/(tabs)");
+          setEmail("");
+          setPassword("");
         }
       } catch (error) {
-        let errorMessage = "Неизвестная ошибка";
-        if (axios.isAxiosError(error) && error.response) {
-          errorMessage = `Ошибка: ${error.response.status}`;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-        return <Text>{errorMessage}</Text>;
+        console.log("Ошибка:", error);
       }
     } else {
       try {
         await axios.post(
-          "http://localhost:8080/api/register/",
+          "http://127.0.0.1:8080/api/register/",
           {
             username,
             email,
@@ -76,19 +73,27 @@ const FormScreen = () => {
           }
         );
       } catch (error) {
-        let errorMessage = "Неизвестная ошибка";
-        if (axios.isAxiosError(error) && error.response) {
-          errorMessage = `Ошибка: ${error.response.status}`;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-        return <Text>{errorMessage}</Text>;
+        console.log("Ошибка:", error);
       } finally {
         setIsLogin(true);
         setEmail("");
         setPassword("");
       }
     }
+  };
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem("user");
+    await AsyncStorage.removeItem("auth");
+    setUsername("");
+    setIsAuthenticated(false);
+  };
+
+  const switchLogin = () => {
+    setIsLogin(!isLogin);
+    setEmail("");
+    setPassword("");
+    setUsername("");
   };
 
   return (
@@ -98,52 +103,65 @@ const FormScreen = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Text style={styles.header}>{isLogin ? "Вход" : "Регистрация"}</Text>
-
-          <View style={styles.form}>
-            {!isLogin && (
-              <TextInput
-                style={styles.input}
-                placeholder="Имя"
-                value={username}
-                onChangeText={setUsername}
-                placeholderTextColor="#999"
-              />
-            )}
-            <TextInput
-              style={styles.input}
-              placeholder="Почта"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              placeholderTextColor="#999"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Пароль"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholderTextColor="#999"
-            />
-
-            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>
+          {isAuthenticated ? (
+            <View style={styles.authenticatedContainer}>
+              <Text style={styles.header}>Вы вошли под именем: {username}</Text>
+              <TouchableOpacity style={styles.button} onPress={handleLogout}>
+                <Text style={styles.buttonText}>Выйти</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.header}>
                 {isLogin ? "Вход" : "Регистрация"}
               </Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.switchButton}
-              onPress={() => setIsLogin(!isLogin)}
-            >
-              <Text style={styles.switchButtonText}>
-                {isLogin
-                  ? "Нет аккаунта? Зарегистрироваться"
-                  : "Уже есть аккаунт? Войти"}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              <View style={styles.form}>
+                {!isLogin && (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Имя"
+                    value={username}
+                    onChangeText={setUsername}
+                    placeholderTextColor="#999"
+                  />
+                )}
+                <TextInput
+                  style={styles.input}
+                  placeholder="Почта"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  placeholderTextColor="#999"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Пароль"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  placeholderTextColor="#999"
+                />
+
+                <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                  <Text style={styles.buttonText}>
+                    {isLogin ? "Вход" : "Регистрация"}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.switchButton}
+                  onPress={() => switchLogin()}
+                >
+                  <Text style={styles.switchButtonText}>
+                    {isLogin
+                      ? "Нет аккаунта? Зарегистрироваться"
+                      : "Уже есть аккаунт? Войти"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -206,6 +224,10 @@ const styles = StyleSheet.create({
   switchButtonText: {
     color: "#007BFF",
     fontSize: 16,
+  },
+  authenticatedContainer: {
+    alignItems: "center",
+    marginTop: 20,
   },
 });
 
