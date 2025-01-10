@@ -42,7 +42,7 @@ class LoginView(APIView):
         password = serializer.validated_data.get("password")
         
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.filter(email=email).first()
         except User.DoesNotExist:
             return Response({"error": "Ошибка email или password"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -51,7 +51,7 @@ class LoginView(APIView):
             return Response({"error": "Ошибка email или password"}, status=status.HTTP_400_BAD_REQUEST)
         
         token, created = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key}, status=status.HTTP_200_OK)
+        return Response({"token": token.key, "username": user.username}, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
