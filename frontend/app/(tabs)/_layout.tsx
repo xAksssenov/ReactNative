@@ -3,11 +3,11 @@ import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -42,9 +42,11 @@ export default function TabLayout() {
         options={{
           title: "Авторизация",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <Ionicons name="person" size={28} color={color} />
           ),
-          tabBarStyle: !isAuthenticated ? { display: "none" } : { display: "flex" },
+          tabBarStyle: !isAuthenticated
+            ? { display: "none" }
+            : { display: "flex" },
         }}
       />
 
@@ -53,7 +55,7 @@ export default function TabLayout() {
         options={{
           title: "Калькулятор",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="square.and.pencil" color={color} />
+            <Ionicons name="create" size={28} color={color} />
           ),
         }}
       />
@@ -63,7 +65,7 @@ export default function TabLayout() {
         options={{
           title: "Результаты",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="checklist" color={color} />
+            <Ionicons name="checkmark" size={28} color={color} />
           ),
         }}
       />
