@@ -7,7 +7,7 @@ import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Ionicons } from "@expo/vector-icons";
-import { AuthProvider, useAuth } from "@/context/auth";
+import { useAuth } from "@/context/auth";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();

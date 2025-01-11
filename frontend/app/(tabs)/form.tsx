@@ -1,7 +1,6 @@
 import axios from "axios";
 import { router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
