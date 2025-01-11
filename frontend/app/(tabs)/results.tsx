@@ -10,6 +10,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   View,
+  Button,
+  TouchableOpacity,
 } from "react-native";
 
 const ResultScreen = () => {
@@ -17,9 +19,9 @@ const ResultScreen = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchResults = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
+    const token = await AsyncStorage.getItem("token");
 
+    try {
       const response = await axios.get(
         "http://127.0.0.1:8080/api/calculator/results/",
         {
@@ -53,6 +55,11 @@ const ResultScreen = () => {
     checkAuth();
   }, []);
 
+  const handleUpdateClick = async () => {
+    setLoading(true);
+    await fetchResults();
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -64,6 +71,9 @@ const ResultScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <Text style={styles.header}>Результаты</Text>
+      <TouchableOpacity style={styles.button} onPress={handleUpdateClick}>
+        <Text style={styles.buttonText}>Обновить данные</Text>
+      </TouchableOpacity>
       {results.map((result) => (
         <View key={result.id} style={styles.card}>
           <Text style={styles.resultText}>Результат: {result.result}</Text>
@@ -121,6 +131,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fff",
+  },
+  button: {
+    backgroundColor: "#000",
+    borderRadius: 8,
+    paddingVertical: 15,
+    padding: 20,
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
   },
 });
 
