@@ -1,26 +1,17 @@
 import { Tabs } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Platform } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
+import { AuthProvider, useAuth } from "@/context/auth";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const auth = await AsyncStorage.getItem("auth");
-      setIsAuthenticated(auth === "true");
-    };
-
-    checkAuth();
-  }, []);
+  const { isAuthenticated } = useAuth();
 
   return (
     <Tabs
@@ -49,7 +40,6 @@ export default function TabLayout() {
             : { display: "flex" },
         }}
       />
-
       <Tabs.Screen
         name="index"
         options={{
@@ -59,7 +49,6 @@ export default function TabLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="results"
         options={{

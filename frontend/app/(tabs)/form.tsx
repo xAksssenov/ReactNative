@@ -15,26 +15,14 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { LoginResponse } from "@/types";
+import { useAuth } from "@/context/auth";
 
 const FormScreen = () => {
+  const { isAuthenticated, user, login, logout } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const storedUsername = await AsyncStorage.getItem("user");
-      const storedAuth = await AsyncStorage.getItem("auth");
-      if (storedAuth === "true" && storedUsername) {
-        setUsername(storedUsername);
-        setIsAuthenticated(true);
-      }
-    };
-
-    checkAuth();
-  }, []);
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
 
   const handleSubmit = async () => {
     if (isLogin) {
@@ -55,10 +43,7 @@ const FormScreen = () => {
 
         if (response.status === 200) {
           const { username, token } = response.data;
-          AsyncStorage.setItem("user", username);
-          AsyncStorage.setItem("auth", "true");
-          AsyncStorage.setItem("token", token);
-          setIsAuthenticated(true);
+          await login(username, token);
           router.push("/(tabs)");
           setEmail("");
           setPassword("");
@@ -93,17 +78,7 @@ const FormScreen = () => {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem("user");
-    await AsyncStorage.removeItem("auth");
-    setUsername("");
-    setIsAuthenticated(false);
-  };
-
-  const switchLogin = () => {
-    setIsLogin(!isLogin);
-    setEmail("");
-    setPassword("");
-    setUsername("");
+    await logout();
   };
 
   return (
@@ -115,7 +90,7 @@ const FormScreen = () => {
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           {isAuthenticated ? (
             <View style={styles.authenticatedContainer}>
-              <Text style={styles.header}>Вы вошли под именем: {username}</Text>
+              <Text style={styles.header}>Вы вошли под именем: {user}</Text>
               <TouchableOpacity style={styles.button} onPress={handleLogout}>
                 <Text style={styles.buttonText}>Выйти</Text>
               </TouchableOpacity>
@@ -161,7 +136,7 @@ const FormScreen = () => {
 
                 <TouchableOpacity
                   style={styles.switchButton}
-                  onPress={() => switchLogin()}
+                  onPress={() => setIsLogin(!isLogin)}
                 >
                   <Text style={styles.switchButtonText}>
                     {isLogin

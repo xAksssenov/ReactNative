@@ -14,3 +14,11 @@ export interface CalculatorResult {
   result: number;
   created_at: string;
 }
+
+export type AuthContextType = {
+  isAuthenticated: boolean;
+  user: string | null;
+  token: string | null;
+  login: (user: string, token: string) => Promise<void>;
+  logout: () => Promise<void>;
+};

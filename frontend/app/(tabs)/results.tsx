@@ -2,6 +2,7 @@ import { CalculatorResult } from "@/types";
 import { getInterpretation } from "@/utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Text,
@@ -15,33 +16,41 @@ const ResultScreen = () => {
   const [results, setResults] = useState<CalculatorResult[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
+  const fetchResults = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
 
-        const response = await axios.get(
-          "http://127.0.0.1:8080/api/calculator/results/",
-          {
-            withCredentials: true,
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Token ${token}`,
-            },
-          }
-        );
-
-        if (response.status === 200) {
-          setResults(response.data);
-          setLoading(false);
+      const response = await axios.get(
+        "http://127.0.0.1:8080/api/calculator/results/",
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
+          },
         }
-      } catch (error) {
-        console.log("Ошибка:", error);
-        setLoading(true);
+      );
+
+      if (response.status === 200) {
+        setResults(response.data);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log("Ошибка:", error);
+      setLoading(true);
+    }
+  };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        router.push("/form");
       }
     };
 
     fetchResults();
+    checkAuth();
   }, []);
 
   if (loading) {

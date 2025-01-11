@@ -1,7 +1,8 @@
 import { getInterpretation, interpretation, questions } from "@/utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import React, { useState } from "react";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,7 +15,18 @@ import {
 const CalculatorScreen = () => {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [result, setResult] = useState<number | null>(null);
-  const [showMessage, setShowMessage] = useState(false);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        router.push("/form");
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const postResult = async () => {
     const token = await AsyncStorage.getItem("token");
@@ -48,6 +60,7 @@ const CalculatorScreen = () => {
   const calculateResult = () => {
     const total = Object.values(answers).reduce((sum, value) => sum + value, 0);
     setResult(total);
+    setAnswers({});
   };
 
   return (
