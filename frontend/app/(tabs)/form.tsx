@@ -58,9 +58,10 @@ const FormScreen = () => {
         );
 
         if (response.status === 200) {
-          const { username } = response.data;
+          const { username, token } = response.data;
           AsyncStorage.setItem("user", username);
           AsyncStorage.setItem("auth", "true");
+          AsyncStorage.setItem("token", token);
           setIsAuthenticated(true);
           router.push("/(tabs)");
           setEmail("");

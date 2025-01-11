@@ -59,6 +59,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8081",
 ]
 
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+ 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     "GET",
@@ -72,6 +75,7 @@ CORS_ALLOW_HEADERS = [
     "content-type",
     "authorization",
     "x-requested-with",
+    'x-csrftoken',
     "accept",
 ]
 

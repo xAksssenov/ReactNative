@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import React, { useState } from "react";
 import {
@@ -18,8 +19,11 @@ interface Question {
 const CalculatorScreen = () => {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [result, setResult] = useState<number | null>(null);
+  const [showMessage, setShowMessage] = useState(false);
 
   const postResult = async () => {
+    const token = await AsyncStorage.getItem("token");
+
     try {
       await axios.post(
         "http://127.0.0.1:8080/api/calculator/",
@@ -30,9 +34,13 @@ const CalculatorScreen = () => {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
           },
         }
       );
+
+      setShowMessage(true);
+      setTimeout(() => setShowMessage(false), 3000);
     } catch (error) {
       console.log("Ошибка:", error);
     }
@@ -278,6 +286,15 @@ const CalculatorScreen = () => {
           <Text style={styles.buttonText}>Отправить результат</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {showMessage && (
+        <View style={styles.messageContainer}>
+          <Text style={styles.messageText}>
+            Ваш результат: {result} записан
+          </Text>
+          <Text style={styles.messageText}>Спасибо за ответ!</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -378,6 +395,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     width: "45%",
     textAlign: "center",
+  },
+  messageContainer: {
+    position: "absolute",
+    width: "70%",
+    top: 30,
+    right: 20,
+    backgroundColor: "#b53232",
+    padding: 20,
+    borderRadius: 8,
+  },
+  messageText: {
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 18,
   },
 });
 
