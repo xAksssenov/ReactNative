@@ -1,165 +1,118 @@
+import { CalculatorResult } from "@/types";
+import { getInterpretation } from "@/utils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  View,
   Text,
-  TextInput,
-  Button,
   ScrollView,
   StyleSheet,
-  Platform,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  TouchableOpacity,
+  ActivityIndicator,
+  View,
 } from "react-native";
 
-interface LoginResponse {
-  token: string;
-  username: string;
-}
+const ResultScreen = () => {
+  const [results, setResults] = useState<CalculatorResult[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const FormScreen = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleSubmit = async () => {
-    if (isLogin) {
+  useEffect(() => {
+    const fetchResults = async () => {
       try {
-        const response = await axios.post<LoginResponse>(
-          "http://192.168.0.108:8080/api/login/",
-          {
-            email,
-            password,
-          },
+        const token = await AsyncStorage.getItem("token");
+
+        const response = await axios.get(
+          "http://127.0.0.1:8080/api/calculator/results/",
           {
             withCredentials: true,
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Token ${token}`,
             },
           }
         );
 
         if (response.status === 200) {
-          const { username } = response.data;
-          localStorage.setItem("user", username);
-          localStorage.setItem("auth", "true");
+          setResults(response.data);
+          setLoading(false);
         }
       } catch (error) {
-        let errorMessage = "Неизвестная ошибка";
-        if (axios.isAxiosError(error) && error.response) {
-          errorMessage = `Ошибка: ${error.response.status}`;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-        return <Text>{errorMessage}</Text>;
+        console.log("Ошибка:", error);
+        setLoading(true);
       }
-    } else {
-      try {
-        await axios.post(
-          "http://192.168.0.108:8080/api/login/",
-          {
-            username,
-            email,
-            password,
-          },
-          {
-            withCredentials: true,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      } catch (error) {
-        let errorMessage = "Неизвестная ошибка";
-        if (axios.isAxiosError(error) && error.response) {
-          errorMessage = `Ошибка: ${error.response.status}`;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-        return <Text>{errorMessage}</Text>;
-      } finally {
-        setIsLogin(true);
-        setEmail("");
-        setPassword("");
-      }
-    }
-  };
+    };
+
+    fetchResults();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Text style={styles.header}>{isLogin ? "Результаты" : "Регистрация"}</Text>
-        </ScrollView>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <Text style={styles.header}>Результаты</Text>
+      {results.map((result) => (
+        <View key={result.id} style={styles.card}>
+          <Text style={styles.resultText}>Результат: {result.result}</Text>
+          <Text style={styles.interpretationText}>
+            Интерпретация: {getInterpretation(result.result)}
+          </Text>
+          <Text style={styles.dateText}>
+            Дата: {new Date(result.created_at).toLocaleDateString()}
+          </Text>
+        </View>
+      ))}
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
+    padding: 20,
+    backgroundColor: "#fff",
   },
   header: {
     fontSize: 32,
     fontWeight: "bold",
-    marginBottom: 30,
+    marginBottom: 20,
     textAlign: "center",
   },
-  form: {
-    width: "100%",
-    alignItems: "center",
-  },
-  input: {
-    width: "100%",
-    backgroundColor: "#fff",
-    borderColor: "#ddd",
-    borderWidth: 1,
+  card: {
+    backgroundColor: "#f9f9f9",
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    padding: 15,
     marginBottom: 15,
-    fontSize: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  button: {
-    width: "100%",
-    backgroundColor: "#000",
-    borderRadius: 8,
-    paddingVertical: 15,
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  buttonText: {
-    color: "#fff",
+  resultText: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "bold",
+    marginBottom: 5,
   },
-  switchButton: {
-    marginTop: 10,
-  },
-  switchButtonText: {
-    color: "#007BFF",
+  interpretationText: {
     fontSize: 16,
+    color: "#555",
+    marginBottom: 10,
+  },
+  dateText: {
+    fontSize: 14,
+    color: "#888",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
 });
 
-export default FormScreen;
+export default ResultScreen;

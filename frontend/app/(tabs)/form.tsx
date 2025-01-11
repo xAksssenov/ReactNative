@@ -14,11 +14,7 @@ import {
   Keyboard,
   TouchableOpacity,
 } from "react-native";
-
-interface LoginResponse {
-  token: string;
-  username: string;
-}
+import { LoginResponse } from "@/types";
 
 const FormScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
