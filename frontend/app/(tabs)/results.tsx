@@ -10,9 +10,10 @@ import {
   StyleSheet,
   ActivityIndicator,
   View,
-  Button,
   TouchableOpacity,
 } from "react-native";
+import { LineChart } from "react-native-chart-kit";
+import { Dimensions } from "react-native";
 
 const ResultScreen = () => {
   const [results, setResults] = useState<CalculatorResult[]>([]);
@@ -68,9 +69,54 @@ const ResultScreen = () => {
     );
   }
 
+  const chartData = {
+    labels: results.map((result) =>
+      new Date(result.created_at).toLocaleDateString()
+    ),
+    datasets: [
+      {
+        data: results.map((result) => result.result),
+        strokeWidth: 2,
+      },
+    ],
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <Text style={styles.header}>Результаты</Text>
+      <View style={styles.chartContainer}>
+        <LineChart
+          data={chartData}
+          width={Dimensions.get("window").width - 40}
+          height={240}
+          chartConfig={{
+            backgroundColor: "#fff",
+            backgroundGradientFrom: "#f9f9f9",
+            backgroundGradientTo: "#f9f9f9",
+            decimalPlaces: 2,
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            style: {
+              borderRadius: 16,
+            },
+            propsForLabels: {
+              fontSize: 10,
+            },
+            propsForDots: {
+              r: "6",
+              strokeWidth: "2",
+              stroke: "#000",
+            },
+          }}
+          bezier
+          style={{
+            marginVertical: 8,
+            borderRadius: 16,
+          }}
+          xLabelsOffset={10}
+          verticalLabelRotation={-30}
+        />
+      </View>
       <TouchableOpacity style={styles.button} onPress={handleUpdateClick}>
         <Text style={styles.buttonText}>Обновить данные</Text>
       </TouchableOpacity>
@@ -100,6 +146,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+  },
+  chartContainer: {
+    marginBottom: 20,
   },
   card: {
     backgroundColor: "#f9f9f9",
