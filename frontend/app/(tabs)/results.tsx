@@ -1,4 +1,4 @@
-import { CalculatorResult } from "@/types";
+import { Atricle, CalculatorResult } from "@/types";
 import { getInterpretation } from "@/utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -17,6 +17,7 @@ import { Dimensions } from "react-native";
 
 const ResultScreen = () => {
   const [results, setResults] = useState<CalculatorResult[]>([]);
+  const [articles, setArticles] = useState<Atricle[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchResults = async () => {
@@ -44,6 +45,19 @@ const ResultScreen = () => {
     }
   };
 
+  const fetchArticles = async () => {
+    try {
+      const response = await axios.get(
+        "https://c3772d11996b330e.mokky.dev/leken"
+      );
+      if (response.status === 200) {
+        setArticles(response.data);
+      }
+    } catch (error) {
+      console.log("Ошибка при загрузке статей:", error);
+    }
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       const token = await AsyncStorage.getItem("token");
@@ -53,12 +67,14 @@ const ResultScreen = () => {
     };
 
     fetchResults();
+    fetchArticles();
     checkAuth();
   }, []);
 
   const handleUpdateClick = async () => {
     setLoading(true);
     await fetchResults();
+    await fetchArticles();
   };
 
   if (loading) {
@@ -84,7 +100,7 @@ const ResultScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <Text style={styles.header}>Результаты</Text>
-      <View style={styles.chartContainer}>
+      <View>
         <LineChart
           data={chartData}
           width={Dimensions.get("window").width - 40}
@@ -120,6 +136,23 @@ const ResultScreen = () => {
       <TouchableOpacity style={styles.button} onPress={handleUpdateClick}>
         <Text style={styles.buttonText}>Обновить данные</Text>
       </TouchableOpacity>
+      <Text style={styles.subHeader}>Статьи</Text>
+      <ScrollView
+        horizontal
+        contentContainerStyle={styles.articleScrollContainer}
+      >
+        {articles.map((article) => (
+          <View key={article.id} style={styles.articleCard}>
+            <Text style={styles.articleTitle}>{article.title}</Text>
+            <Text style={styles.articleContent}>{article.content}</Text>
+            <Text style={styles.articleMeta}>
+              Автор: {article.author} | Дата:{" "}
+              {new Date(article.created_at).toLocaleDateString()}
+            </Text>
+          </View>
+        ))}
+      </ScrollView>
+      <Text style={styles.titleResult}>Вычисления</Text>
       {results.map((result) => (
         <View key={result.id} style={styles.card}>
           <Text style={styles.resultText}>Результат: {result.result}</Text>
@@ -147,8 +180,43 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
-  chartContainer: {
-    marginBottom: 20,
+  subHeader: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  articleScrollContainer: {
+    flexDirection: "row",
+    paddingVertical: 10,
+  },
+  articleCard: {
+    backgroundColor: "#f9f9f9",
+    borderRadius: 8,
+    padding: 15,
+    marginRight: 10,
+    width: Dimensions.get("window").width - 60,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  articleTitle: {
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  articleContent: {
+    fontSize: 16,
+    lineHeight: 22,
+    color: "#555",
+    marginBottom: 10,
+  },
+  articleMeta: {
+    fontSize: 14,
+    color: "#888",
   },
   card: {
     backgroundColor: "#f9f9f9",
@@ -165,6 +233,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 5,
+  },
+  titleResult: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginVertical: 20,
   },
   interpretationText: {
     fontSize: 16,
@@ -187,7 +261,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     padding: 20,
     alignItems: "center",
-    marginBottom: 15,
+    margin: 15,
   },
   buttonText: {
     color: "#fff",

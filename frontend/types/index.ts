@@ -22,3 +22,11 @@ export type AuthContextType = {
   login: (user: string, token: string) => Promise<void>;
   logout: () => Promise<void>;
 };
+
+export type Atricle = {
+  id: number;
+  title: string;
+  content: string;
+  author: string;
+  created_at: string;
+};
